@@ -23,26 +23,21 @@ function HarCtrl($scope, $http) {
     };
 
     $scope.recalcRanges = function() {
-        delete $scope.ranges.max.entriesLength;
-        delete $scope.ranges.max;
-        delete $scope.ranges.min;
-        delete $scope.ranges;
-        var n = Date.now();
-        $scope.ranges = {'max': {'entriesLength':0}, 'min': {}};
-        console.log(n, $scope.ranges, $scope.ranges.max);
-        angular.forEach($scope.selected(), function(file) {
-            console.log(n, file, $scope.ranges);
-            for (var i = props.length - 1; i >= 0; i--) {
-                if (typeof($scope.ranges.min[props[i]]) === 'undefined') {
-                    $scope.ranges.min[props[i]] = file.data.log[props[i]];
-                    $scope.ranges.max = $scope.ranges.min;
-                } else if ($scope.ranges.min[props[i]] > file.data.log[props[i]]) {
-                    $scope.ranges.min[props[i]] = file.data.log[props[i]];
-                } else if ($scope.ranges.max[props[i]] < file.data.log[props[i]]) {
-                    $scope.ranges.max[props[i]] = file.data.log[props[i]];
-                }
-            }
-        });
+       console.log('recalcRanges');
+       delete $scope.ranges;
+       var n = Date.now();
+       $scope.ranges = {'max': {}, 'min': {}};
+       angular.forEach($scope.selected(), function(file) {
+           console.log(file);
+           for (var i = props.length - 1; i >= 0; i--) {
+               var val = file.data.log[props[i]]
+                   min = $scope.ranges.min[props[i]] || val, // current min value, or the current value if not set
+                   max = $scope.ranges.max[props[i]] || val; // current max value, or the current value if not set
+               $scope.ranges.min[props[i]] = Math.min(min, val);
+               $scope.ranges.max[props[i]] = Math.max(max, val);
+           }
+       });
+       console.log($scope.ranges);
     };
     $scope.$watch('files', $scope.recalcRanges, true);
 
@@ -59,7 +54,8 @@ function HarCtrl($scope, $http) {
                 e.log.entriesResHeadersSize += e.log.entries[i].response.headersSize;
                 e.log.respCodes[e.log.entries[i].response.status] += 1;
             }
-            console.log(f, e);
+            // console.log(f, e);
+            console.log('addFile');
             $scope.files.push({file: f, data: e, check: true, unit: false});
         });
     };
@@ -81,14 +77,19 @@ function HarCtrl($scope, $http) {
         var oldFiles = $scope.files;
         $scope.files = [];
         angular.forEach(oldFiles, function(file) {
-            if (!file.check) $scope.files.push(file);
+            if (!file.check) {
+                console.log('removeSelected');
+                $scope.files.push(file);
+            }
         });
     };
 
     $scope.selected = function() {
         var sel = [];
         angular.forEach($scope.files, function(file) {
-            if (file.check) sel.push(file);
+            if (file.check) {
+                sel.push(file);
+            }
         });
         return sel;
     };

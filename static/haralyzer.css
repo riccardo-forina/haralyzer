@@ -49,6 +49,10 @@ body {
     color: #468847;
     font-weight: bold;
 }
+.worse {
+    color: #ff2217;
+    font-weight: bold;
+}
 small {
     opacity: .75;
     float: left;

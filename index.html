@@ -1,5 +1,5 @@
 <!doctype html>
-<html ng-app id="dragzone">
+<html ng-app="HarApp" id="dragzone">
 <head>
     <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css">
     <link rel="stylesheet" href="/static/haralyzer.css">
@@ -14,13 +14,13 @@
             <input type="file" id="inputfile" multiple="multiple">
         </p>
         <button type="button" class="btn btn-default" ng-click="demo()" ng-show="!files.length">load demo files</button>
-        <div ng-repeat="file in files | orderBy:'data.log.pages.0.startedDateTime'">
-            <input type="checkbox" ng-model="file.check">
-            <span>{{ file.file }}</span>
+        <div ng-repeat="file in files">
+            <input type="checkbox" ng-model="selectedFiles[file.name]">
+            <span>{{ file.name }}</span>
         </div>
         <div class="functions" ng-show="files.length">
             <button type="button" class="btn btn-default" ng-click="selectAll()">{{ (selected().length < files.length) && 'check all' || 'uncheck all' }}</button>
-            <button type="button" class="btn btn-default" ng-click="removeSelected()" ng-disabled="!selected().length">remove</button>
+            <button type="button" class="btn btn-default" ng-click="removeSelected()">remove</button>
         </div>
 
         <h2 ng-show="files.length">See the results</h2>
@@ -35,25 +35,29 @@
                 <span>Response Size</span>
             </div>
             <div class="results">
-                <div class="compareCol" ng-repeat="file in selected() | orderBy:'data.log.pages.0.startedDateTime'" ng-click="unit(file)" ng-class="{'selected': file.unit}">
-                    <span>{{ file.file }}</span>
-                    <span>{{ file.data.log.pages.0.startedDateTime | date:'dd MMM yyyy @ H:mm' }}</span>
-                    <span>{{ file.data.log.pages.0.title }}</span>
-                    <span class="text-right" ng-class="{'best': (ranges.min.entriesLength == file.data.log.entriesLength)}">
-                        {{ file.data.log.entriesLength | number }}
-                        <small ng-show="compare.entriesLength != file.data.log.entriesLength">{{ (file.data.log.entriesLength / compare.entriesLength * 100 - 100) | number:2 }}%</small>
+                <div class="compareCol" ng-repeat="file in files | filter:isSelected" ng-class="{'selected': file.unit}">
+                    <span>{{ file.name }}</span>
+                    <span>{{ file.data.pages.0.startedDateTime | date:'dd MMM yyyy @ H:mm' }}</span>
+                    <span>{{ file.data.pages.0.title }}</span>
+                    <span show-entry="entriesLength"
+                          value="file.data.entriesLength"
+                          min="ranges.min.entriesLength"
+                          max="ranges.max.entriesLength">
                     </span>
-                    <span class="text-right" ng-class="{'best': (ranges.min.entriesReqHeadersSize == file.data.log.entriesReqHeadersSize)}">
-                        {{ file.data.log.entriesReqHeadersSize | number }} B
-                        <small ng-show="compare.entriesReqHeadersSize != file.data.log.entriesReqHeadersSize">{{ (file.data.log.entriesReqHeadersSize / compare.entriesReqHeadersSize * 100 - 100) | number:2 }}%</small>
+                    <span show-entry="entriesReqHeadersSize"
+                          value="file.data.entriesReqHeadersSize"
+                          min="ranges.min.entriesReqHeadersSize"
+                          max="ranges.max.entriesReqHeadersSize">
                     </span>
-                    <span class="text-right" ng-class="{'best': (ranges.min.entriesResHeadersSize == file.data.log.entriesResHeadersSize)}">
-                        {{ file.data.log.entriesResHeadersSize | number }} B
-                        <small ng-show="compare.entriesResHeadersSize != file.data.log.entriesResHeadersSize">{{ (file.data.log.entriesResHeadersSize / compare.entriesResHeadersSize * 100 - 100) | number:2 }}%</small>
+                    <span show-entry="entriesResHeadersSize"
+                          value="file.data.entriesResHeadersSize"
+                          min="ranges.min.entriesResHeadersSize"
+                          max="ranges.max.entriesResHeadersSize">
                     </span>
-                    <span class="text-right" ng-class="{'best': (ranges.min.entriesSize == file.data.log.entriesSize)}">
-                        {{ file.data.log.entriesSize | number }} B
-                        <small ng-show="compare.entriesSize != file.data.log.entriesSize">{{ (file.data.log.entriesSize / compare.entriesSize * 100 - 100) | number:2 }}%</small>
+                    <span show-entry="entriesSize"
+                          value="file.data.entriesSize"
+                          min="ranges.min.entriesSize"
+                          max="ranges.max.entriesSize">
                     </span>
                 </div>
             </div>
@@ -61,6 +65,6 @@
     </div>
 
     <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.0.8/angular.min.js"></script>
-    <script src="/static/haralyzer.js"></script>
+    <script src="/static/haralyzer2.js"></script>
 </body>
 </html>
