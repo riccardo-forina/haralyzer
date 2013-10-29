@@ -3,12 +3,7 @@ function HarCtrl($scope, $http) {
 
     $scope.files = [];
     $scope.ranges = {};
-    $scope.compare = {
-        'entriesLength': 100,
-        'entriesSize': 100,
-        'entriesReqHeadersSize': 100,
-        'entriesResHeadersSize': 100
-    };
+    $scope.compare = {};
 
 
     $scope.safeApply = function(fn) {
@@ -23,22 +18,30 @@ function HarCtrl($scope, $http) {
     };
 
     $scope.recalcRanges = function() {
-       console.log('recalcRanges');
-       delete $scope.ranges;
-       var n = Date.now();
-       $scope.ranges = {'max': {}, 'min': {}};
-       angular.forEach($scope.selected(), function(file) {
-           console.log(file);
-           for (var i = props.length - 1; i >= 0; i--) {
-               var val = file.data.log[props[i]]
-                   min = $scope.ranges.min[props[i]] || val, // current min value, or the current value if not set
-                   max = $scope.ranges.max[props[i]] || val; // current max value, or the current value if not set
-               $scope.ranges.min[props[i]] = Math.min(min, val);
-               $scope.ranges.max[props[i]] = Math.max(max, val);
-           }
-       });
-       console.log($scope.ranges);
+        $scope.ranges = {'max': {}, 'min': {}};
+        $scope.compare = {};
+        angular.forEach($scope.selected(), function(file) {
+            for (var i = props.length - 1; i >= 0; i--) {
+                var val = file.data.log[props[i]];
+                $scope.ranges.min[props[i]] = Math.min($scope.ranges.min[props[i]] || val, val);
+                $scope.ranges.max[props[i]] = Math.max($scope.ranges.max[props[i]] || val, val);
+            }
+            if (file.unit) {
+                for (var i = props.length - 1; i >= 0; i--) {
+                    $scope.compare[props[i]] = file.data.log[props[i]];
+                };
+            }
+        });
+        if (!Object.keys($scope.compare).length) $scope.compare = $scope.ranges.min;
+
+        angular.forEach($scope.selected(), function(file) {
+            file.data.perc = {};
+            for (var i = props.length - 1; i >= 0; i--) {
+                file.data.perc[props[i]] = (file.data.log[props[i]] / $scope.compare[props[i]] * 100 - 100);
+            }
+        });
     };
+
     $scope.$watch('files', $scope.recalcRanges, true);
 
     $scope.addFile = function(f, e) {
@@ -55,22 +58,15 @@ function HarCtrl($scope, $http) {
                 e.log.respCodes[e.log.entries[i].response.status] += 1;
             }
             // console.log(f, e);
-            console.log('addFile');
             $scope.files.push({file: f, data: e, check: true, unit: false});
         });
     };
 
     $scope.unit = function(f) {
         angular.forEach($scope.selected(), function(file) {
-            file.unit = false;
+            if (file != f) file.unit = false;
         });
         f.unit = !f.unit;
-        $scope.compare = {
-            'entriesLength': f.data.log.entriesLength,
-            'entriesSize': f.data.log.entriesSize,
-            'entriesReqHeadersSize': f.data.log.entriesReqHeadersSize,
-            'entriesResHeadersSize': f.data.log.entriesResHeadersSize
-        };
     };
 
     $scope.removeSelected = function() {
