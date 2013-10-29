@@ -1,6 +1,7 @@
 <span class="text-right" ng-class="{'best': value == min && min != max, 'worse': value == max && min != max}" ng-click="showDelta = !showDelta">
     {{ value }}
-    <small ng-show="value > min && !showDelta">{{ (value - min) * 100 / min | number }}%</small>
-    <small ng-show="value < max && !showDelta">{{ (value - max) * 100 / max | number }}%</small>
-    <small ng-show="showDelta">{{ value - min }}</small>
+    <small class="label label-small label-danger" ng-show="value > min && !showDelta">{{ (value - min) * 100 / min | number:2 }}%</small>
+    <small class="label label-small label-success" ng-show="value < max && !showDelta">{{ (max - value) * 100 / max | number:2 }}%</small>
+    <small class="label label-small label-danger" ng-show="showDelta">{{ value - min }}</small>
+    <small class="label label-small label-success" ng-show="showDelta">{{ max - value }}</small>
 </span>
